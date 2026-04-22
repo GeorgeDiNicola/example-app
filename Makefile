@@ -1,5 +1,6 @@
 IMAGE_NAME ?= example-app
 PORT ?= 8080
+VERSION_TAG ?= v1.0.0
 
 
 .PHONY: test
@@ -8,7 +9,10 @@ test:
 
 .PHONY: docker-build
 docker-build:
-	docker buildx build -t $(IMAGE_NAME) .
+	docker buildx build \
+		-t $(IMAGE_NAME):latest \
+		-t $(IMAGE_NAME):$(VERSION_TAG) \
+		.
 
 .PHONY: docker-run
 docker-run:
@@ -21,10 +25,15 @@ up: \
 
 .PHONY: docker-test
 docker-test:
-	# Run the container in the background
-	docker run -d --name health-check -p $(PORT):$(PORT) $(IMAGE_NAME)
-	sleep 3
-	# force an error if curl fails the healthcheck
-	curl --fail http://localhost:$(PORT)/health || (docker logs health-check && docker stop health-check && docker rm health-check && exit 1)
-	docker stop health-check
-	docker rm health-check
+	# prevent docker container name collisions by using the shell PID
+	@container_name=health-check-$$$$; \
+	docker run -d --name $$container_name -p $(PORT):$(PORT) $(IMAGE_NAME):$(VERSION_TAG); \
+	trap 'docker logs $$container_name 2>/dev/null || true; docker rm -f $$container_name 2>/dev/null || true' 0 1 2 3 15; \
+	for i in 1 2 3; do \
+		if curl --fail --silent http://localhost:$(PORT)/health > /dev/null; then \
+			exit 0; \
+		fi; \
+		sleep 1; \
+	done; \
+	echo "Smoke test failed"; \
+	exit 1
