@@ -1,0 +1,26 @@
+# Binary outputs
+bin/
+obj/
+
+# Git metadata
+.git/
+.gitignore
+
+# Go-specific
+go.work             # Workspace files should stay local
+go.work.sum
+
+# Testing and Coverage
+*.test
+*.out
+coverage.txt
+
+# IDEs and OS files
+.vscode/
+.DS_Store
+*.swp
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
