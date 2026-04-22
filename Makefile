@@ -8,3 +8,8 @@ docker-build:
 .PHONY: docker-run
 docker-run:
 	docker run -p $(PORT):$(PORT) $(DOCKER_IMAGE)
+
+.PHONY: up
+up: \
+	docker-build \
+	docker-run
