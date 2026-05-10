@@ -14,7 +14,7 @@ RUN CGO_ENABLED=0 go build -o main ./cmd/server/main.go
 # STAGE 2: Run the app
 FROM alpine:3.23
 
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates curl
 
 RUN adduser -D -g '' appuser
 

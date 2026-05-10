@@ -1,12 +1,15 @@
 package main
 
 import (
+	"example-app/internal/debug"
 	"example-app/internal/health"
 	"example-app/internal/middleware"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -18,7 +21,11 @@ func main() {
 	mux := http.NewServeMux()
 
 	healthHandler := http.HandlerFunc(health.Handler)
-	mux.Handle("GET /health", middleware.Logging(healthHandler))
+	debugErrorHandler := http.HandlerFunc(debug.ErrorHandler)
+
+	mux.Handle("GET /health", middleware.Logging(middleware.Metrics("/health", healthHandler)))
+	mux.Handle("GET /debug/error", middleware.Logging(middleware.Metrics("/debug/error", debugErrorHandler)))
+	mux.Handle("GET /metrics", promhttp.Handler())
 
 	port := os.Getenv("PORT")
 	if port == "" {
