@@ -8,7 +8,7 @@ import (
 )
 
 func TestHandler(t *testing.T) {
-	// Create a mock HTTP request to pass to the handler
+	// mock HTTP request to pass to the handler
 	req, err := http.NewRequest("GET", "/health", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -22,24 +22,20 @@ func TestHandler(t *testing.T) {
 	// Call the handler directly
 	handler.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
 
-	// Check the Content-Type header
 	expectedHeader := "application/json"
 	if contentType := rr.Header().Get("Content-Type"); contentType != expectedHeader {
 		t.Errorf("handler returned wrong content type: got %v want %v", contentType, expectedHeader)
 	}
 
-	// Check the response body
 	var response HealthResponse
 	if err := json.NewDecoder(rr.Body).Decode(&response); err != nil {
 		t.Fatalf("could not decode JSON response: %v", err)
 	}
 
-	// 7. Check the rest of the content in the response ensuring expectations
 	if response.Status != "up" {
 		t.Errorf("handler returned unexpected status: got %v want %v", response.Status, "up")
 	}
